@@ -3,12 +3,25 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
-import asyncio
+from asyncio import run
 from src.models.base import Base
 from src.core.config import settings
+from importlib import import_module
+from pkgutil import iter_modules
+
+
+def import_models():
+    import src.models
+
+    for _, name, _ in iter_modules(src.models.__path__):
+        import_module(f"src.models.{name}")
+
+
+import_models()
 
 config = context.config
 fileConfig(config.config_file_name)
+
 target_metadata = Base.metadata
 
 DATABASE_URL = (
@@ -16,6 +29,17 @@ DATABASE_URL = (
     f"{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:"
     f"{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 )
+
+
+def run_migrations_offline():
+    context.configure(
+        url=DATABASE_URL,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 def do_run_migrations(connection: Connection):
@@ -32,10 +56,6 @@ async def run_migrations_online():
 
 
 if context.is_offline_mode():
-    context.configure(
-        url=DATABASE_URL, target_metadata=target_metadata, literal_binds=True
-    )
-    with context.begin_transaction():
-        context.run_migrations()
+    run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run(run_migrations_online())
