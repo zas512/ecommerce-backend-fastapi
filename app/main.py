@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
 from app.core.db import check_db_connection
 from app.core.logger import logger
 from slowapi.errors import RateLimitExceeded
-from app.core.security import limiter, rate_limit_handler, secure_headers
+from app.core.security import limiter, rate_limit_handler
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -31,13 +31,6 @@ def get_application() -> FastAPI:
     _app.state.limiter = limiter
     _app.add_middleware(SlowAPIMiddleware)
     _app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
-
-    @_app.middleware("http")
-    async def set_secure_headers(request: Request, call_next):
-        response = await call_next(request)
-        secure_headers.framework.fastapi(response)
-        return response
-
     _app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.ALLOWED_HOSTS)
     _app.add_middleware(GZipMiddleware, minimum_size=1000)
     _app.add_middleware(

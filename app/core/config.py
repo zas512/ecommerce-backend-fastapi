@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ENV_MODE: str = "dev"
-    ALLOWED_HOSTS: List[str] = ["localhost", "127.0.0.1"]
-    BACKEND_CORS_ORIGINS: List[str] = ["localhost"]
+    ALLOWED_HOSTS: Union[List[str], str] = ["localhost", "127.0.0.1"]
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = ["localhost"]
 
     @computed_field
     @property
@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_HOSTS", "BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def assemble_list(cls, v: Union[str, List[str]]) -> List[str]:
-        if isinstance(v, str) and v:
-            return [i.strip() for i in v.split(",")]
+        if isinstance(v, str):
+            return [i.strip() for i in v.split(",") if i]
         return v
 
     model_config = SettingsConfigDict(
@@ -47,4 +47,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]
