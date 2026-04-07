@@ -1,7 +1,8 @@
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models.user_model import User
-from app.schemas.user_schema import UserCreate
+from app.schemas.user_schema import UserSignup
 from app.utils.auth_utils import hash_password
 
 
@@ -10,12 +11,12 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     return result.scalars().first()
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_id(db: AsyncSession, user_id: UUID) -> User | None:
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalars().first()
 
 
-async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
+async def create_user(db: AsyncSession, user_in: UserSignup) -> User:
     db_user = User(
         email=user_in.email,
         hashed_password=hash_password(user_in.password),

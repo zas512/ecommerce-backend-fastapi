@@ -6,11 +6,14 @@ from app.core.config import settings
 logger.remove()
 
 if settings.ENV_MODE == "dev":
+    logger.level("INFO", color="<yellow>")
+    logger.level("ERROR", color="<red>")
+    logger.level("CRITICAL", color="<red><bold>")
     logger.add(
         sys.stdout,
         level="DEBUG",
         colorize=True,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        format="<blue>{time:YYYY-MM-DD HH:mm:ss}</blue> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     )
     logger.info("LOGGING MODE: Console (Dev)")
 
