@@ -9,6 +9,7 @@ from app.core.security import limiter, rate_limit_handler
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from app.middlewares import JWTAuthMiddleware
 from app.core.config import settings
 
 
@@ -39,7 +40,9 @@ def get_application() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-New-Access-Token"],
     )
+    _app.add_middleware(JWTAuthMiddleware)
     _app.include_router(api_router, prefix="/api/v1")
     return _app
 
